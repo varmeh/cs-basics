@@ -13,11 +13,11 @@ class BinaryHeap {
         }
     }
 
-    leftChildIndex() {
+    _leftChildIndex(n) {
         return 2 * n
     }
 
-    righChildIndex() {
+    _righChildIndex(n) {
         return 2 * n + 1
     }
 
@@ -31,7 +31,7 @@ class BinaryHeap {
         this.heap[b] = temp
     }
 
-    // cidx -> Child Index, pidx -> Parent Index
+    // Move bigger child up
     _bubbleUp(index) {
         let cidx = index
         let pidx = null
@@ -54,7 +54,36 @@ class BinaryHeap {
         this._bubbleUp(this.heap.length - 1)
     }
 
-    _bubbleDown(index) {}
+    // Move smaller parent down
+    _bubbleDown(index) {
+        let pidx = index // parent index
+        let lidx = null // left child index
+        let ridx = null // right child index
+        let largestidx = null // largest of 3 indexes - parent, left & right
+
+        while (true) {
+            lidx = this._leftChildIndex(pidx)
+            ridx = this._righChildIndex(pidx)
+            largestidx = pidx
+
+            // Check if left child exists and is greater than the parent
+            if (lidx < this.heap.length && this.heap[lidx] > this.heap[largestidx]) {
+                largestidx = lidx
+            }
+
+            // Check if right child exists and is greater than the largest so far (parent or left child)
+            if (ridx < this.heap.length && this.heap[ridx] > this.heap[largestidx]) {
+                largestidx = ridx
+            }
+
+            // If the largest value is still the parent, the heap property is satisfied
+            if (largestidx === pidx) break
+
+            // If not, swap the parent with the largest child and continue
+            this._swap(pidx, largestidx)
+            pidx = largestidx // Move down to the largest child's position
+        }
+    }
 
     // Extract Max Value from Top
     extractMax() {
@@ -89,7 +118,7 @@ class BinaryHeap {
 
         let index = 1 // Start with the first index in the heap array
 
-        console.log(`\n\n${'-'.repeat(40)}\n`)
+        console.log(`\n${'-'.repeat(40)}\n`)
         for (let level = 0; level < depth; level++) {
             let levelNodes = Math.pow(2, level) // Number of nodes at the current level
             let levelSpacing = Math.floor(maxWidth / levelNodes) // Spacing between nodes at this level
@@ -106,6 +135,8 @@ class BinaryHeap {
 
             console.log(line)
         }
+
+        console.log()
     }
 }
 
@@ -126,4 +157,10 @@ heap.tree()
 
 heap.insert(59)
 heap.insert(65)
+heap.tree()
+
+console.log(`Extracted Max: ${heap.extractMax()}`)
+heap.tree()
+
+console.log(`Extracted Max: ${heap.extractMax()}`)
 heap.tree()
