@@ -1,16 +1,15 @@
-// Max Binary Heap - parent nodes are always greator than child nodes
-// Min Binary Heap - parent nodes are always smaller than child nodes
+// Implemented using Max Binary Heap
 
-// Used to implement Priority Queue
+class Node {
+    constructor(value, priority) {
+        this.value = value
+        this.priority = priority
+    }
+}
 
-// Implementing Binary Heap
-class BinaryHeap {
-    constructor(array = []) {
+class PriorityQueue {
+    constructor() {
         this.heap = [null]
-
-        if (array.length) {
-            this.heap = this.heap.concat(array)
-        }
     }
 
     _leftChildIndex(n) {
@@ -39,19 +38,13 @@ class BinaryHeap {
         while (cidx > 1) {
             pidx = this._parentIndex(cidx)
 
-            // When child value is less than or equal to parent value break
-            if (this.heap[cidx] <= this.heap[pidx]) break
+            // When child priority is less than or equal to parent priority break
+            if (this.heap[cidx].priority <= this.heap[pidx].priority) break
 
             // Move Value up
             this._swap(cidx, pidx)
             cidx = pidx
         }
-    }
-
-    // Add a new value & bubble up
-    insert(value) {
-        this.heap.push(value)
-        this._bubbleUp(this.heap.length - 1)
     }
 
     // Move smaller parent down
@@ -67,12 +60,12 @@ class BinaryHeap {
             largestidx = pidx
 
             // Check if left child exists and is greater than the parent
-            if (lidx < this.heap.length && this.heap[lidx] > this.heap[largestidx]) {
+            if (lidx < this.heap.length && this.heap[lidx].priority > this.heap[largestidx].priority) {
                 largestidx = lidx
             }
 
             // Check if right child exists and is greater than the largest so far (parent or left child)
-            if (ridx < this.heap.length && this.heap[ridx] > this.heap[largestidx]) {
+            if (ridx < this.heap.length && this.heap[ridx].priority > this.heap[largestidx].priority) {
                 largestidx = ridx
             }
 
@@ -85,12 +78,20 @@ class BinaryHeap {
         }
     }
 
-    // Extract Max Value from Top
-    extractMax() {
+    // Add a new value & bubble up
+    enqueue(value, priority) {
+        const node = new Node(value, priority)
+
+        this.heap.push(node)
+        this._bubbleUp(this.heap.length - 1)
+    }
+
+    // Remove most important task
+    dequeue() {
         // Empty heap
         if (this.heap.length === 1) return null
 
-        const max = this.heap[1]
+        const priorityNode = this.heap[1]
 
         // Now replace max with last value of the heap
         this.heap[1] = this.heap.pop()
@@ -99,14 +100,9 @@ class BinaryHeap {
         // So, let's balance it by bubbling down
         this._bubbleDown(1)
 
-        return max
+        return priorityNode.value
     }
 
-    print() {
-        console.log(this.heap.slice(1).toString())
-    }
-
-    // Generated using GPT
     tree() {
         if (this.heap.length === 1) {
             console.log('The heap is empty')
@@ -114,7 +110,7 @@ class BinaryHeap {
         }
 
         let depth = Math.floor(Math.log2(this.heap.length - 1)) + 1
-        const maxWidth = Math.pow(2, depth) * 2 // Approximate width of the tree at the bottom level
+        const maxWidth = 80 // Approximate width of the tree at the bottom level
 
         let index = 1 // Start with the first index in the heap array
 
@@ -129,8 +125,8 @@ class BinaryHeap {
             line += ' '.repeat(Math.max(0, leadingSpaces))
 
             for (let n = 0; n < levelNodes && index < this.heap.length; n++, index++) {
-                let nodeVal = this.heap[index].toString()
-                line += nodeVal + ' '.repeat(levelSpacing - nodeVal.length)
+                let nodeVal = `${this.heap[index].value}(${this.heap[index].priority})`
+                line += nodeVal + ' '.repeat(Math.abs(levelSpacing - nodeVal.length))
             }
 
             console.log(line)
@@ -140,27 +136,16 @@ class BinaryHeap {
     }
 }
 
-// const heap = new BinaryHeap()
-// heap.print()
-// heap.insert(41)
-// heap.insert(39)
-// heap.insert(33)
-// heap.insert(18)
-// heap.insert(27)
-// heap.insert(12)
+const queue = new PriorityQueue()
+queue.enqueue('headache', 21)
+queue.enqueue('migrane', 33)
+queue.tree()
+queue.enqueue('injury', 39)
+queue.tree()
+queue.enqueue('accident', 41)
+queue.tree()
 
-const heap = new BinaryHeap([41, 39, 33, 18, 27, 12])
-heap.tree()
-
-heap.insert(55)
-heap.tree()
-
-heap.insert(59)
-heap.insert(65)
-heap.tree()
-
-console.log(`Extracted Max: ${heap.extractMax()}`)
-heap.tree()
-
-console.log(`Extracted Max: ${heap.extractMax()}`)
-heap.tree()
+console.log(`Servicing Now - ${queue.dequeue()}`)
+queue.tree()
+console.log(`Servicing Now - ${queue.dequeue()}`)
+queue.tree()
