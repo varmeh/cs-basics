@@ -1,0 +1,20 @@
+{
+    "useTabs": false,
+    "tabWidth": 4,
+    "printWidth": 140,
+    "singleQuote": true,
+    "semi": false,
+    "jsxSingleQuote": true,
+    "bracketSpacing": true,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "trailingComma": "none",
+    "overrides": [
+        {
+            "files": ["*.md", "*.yml", "*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}
