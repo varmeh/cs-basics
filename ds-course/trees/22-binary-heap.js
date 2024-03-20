@@ -59,7 +59,7 @@ class BinaryHeap {
         let pidx = index // parent index
         let lidx = null // left child index
         let ridx = null // right child index
-        let largestidx = null // largest of 3 indexes - parent, left & right
+        let largestidx = null // index of largest of 3 values - parent, left & right
 
         while (true) {
             lidx = this._leftChildIndex(pidx)
