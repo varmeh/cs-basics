@@ -41,9 +41,6 @@ class BST {
     }
 
     search(value) {
-        // Empty value
-        if (!this.root) return false
-
         let current = this.root
         while (current) {
             if (value === current.value) return true
