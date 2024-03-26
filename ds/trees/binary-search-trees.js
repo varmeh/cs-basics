@@ -50,6 +50,28 @@ class BST {
         return false
     }
 
+    /* Get maximum value in BST */
+    max() {
+        if (!this.root) return null
+
+        let current = this.root
+        while (current.right != null) {
+            current = current.right
+        }
+        return current.value
+    }
+
+    /* Get minimum value in BST */
+    min() {
+        if (!this.root) return null
+
+        let current = this.root
+        while (current.left != null) {
+            current = current.left
+        }
+        return current.value
+    }
+
     bfsTraversal() {
         if (!this.root) return null
 
