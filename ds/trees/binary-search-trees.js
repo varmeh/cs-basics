@@ -72,6 +72,72 @@ class BST {
         return current.value
     }
 
+    /* Delete key with value */
+    delete(value) {
+        let current = this.root
+        let parent = null
+
+        while (current) {
+            if (current.value === value) break
+            parent = current
+            current = value < current.value ? current.left : current.right
+        }
+
+        // Either tree is empty or value not found
+        if (!current) return null
+
+        // Case 1 - current is a leaf node
+        if (!current.left && !current.right) {
+            if (!parent) {
+                // Only 1 node in tree
+                this.root = null
+            } else if (parent.left === current) {
+                parent.left = null
+            } else {
+                parent.right = null
+            }
+            return current.value
+        }
+
+        // Case 2 - current has only 1 child
+        let child = null
+        // Left Child exists
+        if (current.left && !current.right) child = current.left
+
+        // Right Child exists
+        if (!current.left && current.right) child = current.right
+
+        if (child) {
+            // Child will have a value only if node has only 1 child
+            if (!parent) {
+                // Parent would be null if tree had only 2 nodes & root node is to be replaced with child node
+                this.root = child
+            } else if (parent.left === current) {
+                parent.left = child
+            } else {
+                parent.right = child
+            }
+            return current.value
+        }
+
+        // Case 3 - current has 2 children
+        // To replace this value, we could select value from either left or right tree
+        // If left, it has to be max value & for right tree, it has to be min value
+        // Let's go with right tree
+        let minNode = current.right
+
+        while (minNode.left) {
+            minNode = minNode.left
+        }
+
+        // Now, delete minNode & swap it's value with current node
+        const newValue = minNode.value
+        this.delete(newValue) // minNode will either be a leaf node or node with 1 child
+        current.value = newValue
+
+        return value
+    }
+
     bfsTraversal() {
         if (!this.root) return null
 
