@@ -72,6 +72,17 @@ class BST {
         return current.value
     }
 
+    _deleteNode(current, parent, child) {
+        if (!parent) {
+            // Parent would be null if tree had only 2 nodes & root node is to be replaced with child node
+            this.root = child
+        } else if (parent.left === current) {
+            parent.left = child
+        } else {
+            parent.right = child
+        }
+    }
+
     /* Delete key with value */
     delete(value) {
         let current = this.root
@@ -88,14 +99,7 @@ class BST {
 
         // Case 1 - current is a leaf node
         if (!current.left && !current.right) {
-            if (!parent) {
-                // Only 1 node in tree
-                this.root = null
-            } else if (parent.left === current) {
-                parent.left = null
-            } else {
-                parent.right = null
-            }
+            this._deleteNode(current, parent, null)
             return current.value
         }
 
@@ -109,14 +113,7 @@ class BST {
 
         if (child) {
             // Child will have a value only if node has only 1 child
-            if (!parent) {
-                // Parent would be null if tree had only 2 nodes & root node is to be replaced with child node
-                this.root = child
-            } else if (parent.left === current) {
-                parent.left = child
-            } else {
-                parent.right = child
-            }
+            this._deleteNode(current, parent, child)
             return current.value
         }
 
