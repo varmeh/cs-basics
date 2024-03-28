@@ -194,6 +194,32 @@ class BST {
         return result
     }
 
+    /**
+     * Performs a level-order traversal of the binary search tree and returns an array of arrays,
+     * with each inner array containing the values of the nodes at that depth level of the tree.
+     */
+    getNodesByLevel() {
+        if (!this.root) return []
+
+        const queue = [this.root]
+        const result = []
+        while (queue.length) {
+            result.push(queue.map(node => node.value)) // following code does the same thing in elaborate manner
+            // result.push([])
+            // for (let node of queue) {
+            //     result.at(-1).push(node.value)
+            // }
+
+            let qlen = queue.length
+            while (qlen--) {
+                let node = queue.shift()
+                if (node.left) queue.push(node.left)
+                if (node.right) queue.push(node.right)
+            }
+        }
+        return result
+    }
+
     _preorderHelper(node, result) {
         result.push(node.value)
         if (node.left) this._preorderHelper(node.left, result)
@@ -350,3 +376,5 @@ console.assert(tree.successor(1) === null, 'Successor of 1 should be null, as 1 
 console.assert(tree.successor(17) === null, 'Successor of 17 should be null, as 17 is not in the tree and is greater than the max value.')
 
 console.log('All test cases passed!')
+
+console.log(tree.getNodesByLevel())
