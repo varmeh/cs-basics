@@ -72,6 +72,49 @@ class BST {
         return current.value
     }
 
+    /**
+     * Finds the successor of a given value in the BST.
+     * - The successor is the next greater value in the BST, following an in-order traversal.
+     * - The node with the maximum value in the BST has no successor.
+     * - If the node has a right subtree, the successor is the node with the minimum value in that right subtree.
+     * - If the node has no right subtree, the successor is the lowest ancestor for which the given node is in its left subtree.
+     */
+
+    successor(value) {
+        if (!this.root) return null // Check for empty tree
+
+        // Search for value in tree
+        let current = this.root
+        let successor = null
+
+        while (current) {
+            if (current.value === value) {
+                break // Value found
+            } else if (value < current.value) {
+                successor = current // Potential successor if we move left
+                current = current.left
+            } else {
+                current = current.right // Move right, no change in successor
+            }
+        }
+
+        if (!current) return null // value not found in bst
+
+        // If current has a right subtree, the min value in that subtree is successor
+        if (current.right) {
+            let node = current.right
+            while (node.left) {
+                node = node.left
+            }
+            return node.value
+        }
+
+        // If current does not have a right subtree, the successor is the lowest ancestor
+        // for which the current node is in its left subtree (already found during search)
+        // Successor === null && current.right === null only for max()
+        return successor ? successor.value : null
+    }
+
     _deleteNode(current, parent, child) {
         if (!parent) {
             // Parent would be null if tree had only 2 nodes & root node is to be replaced with child node
@@ -294,3 +337,16 @@ console.log(tree.postorderTraversalLinear())
 
 console.log(tree.inorderTraversal())
 console.log(tree.inorderTraversalLinear())
+
+// Test scenarios
+console.assert(tree.successor(10) === 11, 'Successor of 10 should be 11.')
+console.assert(tree.successor(5) === 7, 'Successor of 5 should be 7.')
+console.assert(tree.successor(7) === 10, 'Successor of 7 should be 10.')
+console.assert(tree.successor(13) === 16, 'Successor of 13 should be 16.')
+console.assert(tree.successor(16) === null, "Successor of 16 should be null, as it's the max value.")
+console.assert(tree.successor(2) === 5, 'Successor of 2 should be 5.')
+console.assert(tree.successor(11) === 13, 'Successor of 11 should be 13.')
+console.assert(tree.successor(1) === null, 'Successor of 1 should be null, as 1 is not in the tree.')
+console.assert(tree.successor(17) === null, 'Successor of 17 should be null, as 17 is not in the tree and is greater than the max value.')
+
+console.log('All test cases passed!')
