@@ -104,8 +104,9 @@ class Graph {
             return result
         }
 
+        let v = null
         while (stack.length) {
-            let v = stack.pop()
+            v = stack.pop()
 
             // Process v if unvisited
             if (!visited[v]) {
@@ -115,7 +116,42 @@ class Graph {
                 this.adjacencyList[v].forEach(neighbour => stack.push(neighbour))
             }
         }
+        return result
+    }
 
+    /**
+     * Performs a iterative breadth-first search (DFS) starting from a given vertex.
+     * - Not a scalable solution
+     * - queue.shift() has Time Complexity of O(n)
+     * - So, use custom / library queue which has O(1) time complexity for shift() & pop() operations
+     *
+     * @param {string|number} v The starting vertex for the BFS.
+     *
+     * @returns {Array} The array of vertices visited in BFS order.
+     */
+    bfs(vertex) {
+        const queue = [vertex]
+        const visited = {}
+        const result = []
+
+        // Error Handling for invalid or non-existent vertices
+        if (!vertex || !this.adjacencyList[vertex]) {
+            console.log(`Invalid value of vertex - ${vertex}`)
+            return result
+        }
+
+        let v = null
+        while (queue.length) {
+            v = queue.shift()
+
+            // Process v if unvisited
+            if (!visited[v]) {
+                result.push(v)
+                visited[v] = true
+
+                this.adjacencyList[v].forEach(neighbour => queue.push(neighbour))
+            }
+        }
         return result
     }
 }
@@ -178,3 +214,4 @@ g1.addEdge('E', 'F')
 
 console.log(g1.dfsRecurrsive('A'))
 console.log(g1.dfs('A'))
+console.log(g1.bfs('A'))
