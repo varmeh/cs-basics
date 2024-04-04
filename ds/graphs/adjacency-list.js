@@ -56,6 +56,35 @@ class Graph {
         // Remove vertex as well
         delete this.adjacencyList[v]
     }
+
+    /**
+     * Performs a recursive depth-first search (DFS) starting from a given vertex.
+     * This method explores as far as possible along each branch before backtracking.
+     *
+     * @param {string|number} v The starting vertex for the DFS.
+     * @param {Object} visited An object to track visited vertices to prevent revisits and infinite loops.
+     * @param {Array} result An array that accumulates the vertices visited in DFS order.
+     *
+     * @returns {Array} The array of vertices visited in DFS order.
+     */
+    dfs(v, visited = {}, result = []) {
+        // Error Handling for invalid or non-existent vertices
+        if (!v || !this.adjacencyList[v]) {
+            console.log(`Invalid value of v - ${v}`)
+            return result
+        }
+
+        // Mark this node visited
+        visited[v] = true
+        result.push(v)
+
+        // Recursively visit all unvisited neighbors
+        this.adjacencyList[v].forEach(neighbour => {
+            if (!visited[neighbour]) this.dfs(neighbour, visited, result)
+        })
+
+        return result
+    }
 }
 
 const g = new Graph()
@@ -81,3 +110,33 @@ console.log(g)
 g.removeVertex('hongkong')
 
 console.log(g)
+
+console.log(g.dfs())
+console.log(g.dfs('dls'))
+console.log(g.dfs('dallas'))
+
+const g1 = new Graph()
+
+g1.addVertex('A')
+g1.addVertex('B')
+g1.addVertex('C')
+g1.addVertex('D')
+g1.addVertex('E')
+g1.addVertex('F')
+
+g1.addEdge('A', 'B')
+g1.addEdge('A', 'C')
+g1.addEdge('B', 'D')
+g1.addEdge('C', 'E')
+g1.addEdge('D', 'E')
+g1.addEdge('D', 'F')
+g1.addEdge('E', 'F')
+console.log(g1.dfs('A'))
+
+//          A
+//        /   \
+//       B     C
+//       |     |
+//       D --- E
+//        \   /
+//          F
