@@ -67,21 +67,54 @@ class Graph {
      *
      * @returns {Array} The array of vertices visited in DFS order.
      */
-    dfs(v, visited = {}, result = []) {
+    dfsRecurrsive(vertex, visited = {}, result = []) {
         // Error Handling for invalid or non-existent vertices
-        if (!v || !this.adjacencyList[v]) {
-            console.log(`Invalid value of v - ${v}`)
+        if (!vertex || !this.adjacencyList[vertex]) {
+            console.log(`Invalid value of vertex - ${vertex}`)
             return result
         }
 
         // Mark this node visited
-        visited[v] = true
-        result.push(v)
+        visited[vertex] = true
+        result.push(vertex)
 
         // Recursively visit all unvisited neighbors
-        this.adjacencyList[v].forEach(neighbour => {
-            if (!visited[neighbour]) this.dfs(neighbour, visited, result)
+        this.adjacencyList[vertex].forEach(neighbour => {
+            if (!visited[neighbour]) this.dfsRecurrsive(neighbour, visited, result)
         })
+
+        return result
+    }
+
+    /**
+     * Performs a iterative depth-first search (DFS) starting from a given vertex.
+     *
+     * @param {string|number} v The starting vertex for the DFS.
+     *
+     * @returns {Array} The array of vertices visited in DFS order.
+     */
+    dfs(vertex) {
+        const stack = [vertex]
+        const visited = {}
+        const result = []
+
+        // Error Handling for invalid or non-existent vertices
+        if (!vertex || !this.adjacencyList[vertex]) {
+            console.log(`Invalid value of vertex - ${vertex}`)
+            return result
+        }
+
+        while (stack.length) {
+            let v = stack.pop()
+
+            // Process v if unvisited
+            if (!visited[v]) {
+                result.push(v)
+                visited[v] = true
+
+                this.adjacencyList[v].forEach(neighbour => stack.push(neighbour))
+            }
+        }
 
         return result
     }
@@ -111,8 +144,11 @@ g.removeVertex('hongkong')
 
 console.log(g)
 
-console.log(g.dfs())
+console.log(g.dfsRecurrsive())
+console.log(g.dfsRecurrsive())
+console.log(g.dfsRecurrsive('dls'))
 console.log(g.dfs('dls'))
+console.log(g.dfs('dallas'))
 console.log(g.dfs('dallas'))
 
 const g1 = new Graph()
@@ -131,7 +167,6 @@ g1.addEdge('C', 'E')
 g1.addEdge('D', 'E')
 g1.addEdge('D', 'F')
 g1.addEdge('E', 'F')
-console.log(g1.dfs('A'))
 
 //          A
 //        /   \
@@ -140,3 +175,6 @@ console.log(g1.dfs('A'))
 //       D --- E
 //        \   /
 //          F
+
+console.log(g1.dfsRecurrsive('A'))
+console.log(g1.dfs('A'))
