@@ -41,7 +41,10 @@ function hash(str, arraySize = 999) {
 class HashTable {
     constructor(size = 191) {
         // this.keyMap = new Array(size).fill([]) - // All elements are filled with a reference to the same empty array
-        this.keyMap = Array.from({ length: size }, () => [])
+        this.keyMap = []
+        for (let i = 0; i < size; i++) {
+            this.keyMap.push([])
+        }
     }
 
     _hash(key) {
