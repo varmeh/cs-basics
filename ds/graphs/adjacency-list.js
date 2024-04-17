@@ -123,7 +123,7 @@ class Graph {
      * Performs a iterative breadth-first search (DFS) starting from a given vertex.
      * - Not a scalable solution
      * - queue.shift() has Time Complexity of O(n)
-     * - So, use custom / library queue which has O(1) time complexity for shift() & pop() operations
+     * - So, use custom / library queue which has O(1) time complexity for shift() & push() operations
      *
      * @param {string|number} v The starting vertex for the BFS.
      *
