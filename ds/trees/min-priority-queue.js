@@ -104,24 +104,31 @@ class PriorityQueue {
     }
 
     dequeue() {
-        if (this.heap.length === 1) return null
+        if (this.isEmpty()) return null
 
+        // Fetch the node at the root which has the highest priority (smallest value in a min-heap)
         const priorityNode = this.heap[1]
 
-        // Now replace min with last value of the heap
-        this.heap[1] = this.heap.pop()
+        // Replace the root with the last element in the heap
+        const lastElement = this.heap.pop()
 
-        // Bubble down the new root to restore heap properties
+        // If there are still elements left after popping, we need to re-heapify
         if (this.heap.length > 1) {
+            this.heap[1] = lastElement
             this._bubbleDown(1)
         }
 
         return priorityNode.value
     }
+
+    isEmpty() {
+        return this.heap.length <= 1
+    }
 }
 
 if (require.main === module) {
     const queue = new PriorityQueue()
+    console.log(`Is queue empty: ${queue.isEmpty()}`)
     queue.enqueue('headache', 21)
     queue.enqueue('migrane', 33)
     queue.enqueue('injury', 39)
@@ -130,6 +137,7 @@ if (require.main === module) {
 
     console.log(`Servicing Now - ${queue.dequeue()}`)
     console.log(`Servicing Now - ${queue.dequeue()}`)
+    console.log(`Is queue empty: ${queue.isEmpty()}`)
 
     console.log(queue)
 }

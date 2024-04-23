@@ -88,18 +88,25 @@ class BinaryHeap {
     // Extract Max Value from Top
     extractMax() {
         // Empty heap
-        if (this.heap.length === 1) return null
+        if (this.isEmpty()) return null
 
-        const max = this.heap[1]
+        // Fetch the node at the root which has the highest priority (max value in a max-heap)
+        const priorityNode = this.heap[1]
 
-        // Now replace max with last value of the heap
-        this.heap[1] = this.heap.pop()
+        // Replace the root with the last element in the heap
+        const lastElement = this.heap.pop()
 
-        // Last value was definitely smaller
-        // So, let's balance it by bubbling down
-        this._bubbleDown(1)
+        // If there are still elements left after popping, we need to re-heapify
+        if (this.heap.length > 1) {
+            this.heap[1] = lastElement
+            this._bubbleDown(1)
+        }
 
-        return max
+        return priorityNode.value
+    }
+
+    isEmpty() {
+        return this.heap.length <= 1
     }
 
     print() {
