@@ -139,6 +139,10 @@ if (require.main === module) {
     console.log(`Servicing Now - ${queue.dequeue()}`)
     console.log(`Is queue empty: ${queue.isEmpty()}`)
 
+    console.log(`Servicing Now - ${queue.dequeue()}`)
+    console.log(`Servicing Now - ${queue.dequeue()}`)
+    console.log(`Is queue empty: ${queue.isEmpty()}`)
+
     console.log(queue)
 }
 
