@@ -11,6 +11,8 @@
  *  - Else use Adjacency Maps
  */
 
+const PriorityQueue = require('../trees/min-priority-queue')
+
 class WeightedGraphs {
     constructor() {
         this.adjacencyMaps = {}
