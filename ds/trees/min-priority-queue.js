@@ -1,3 +1,24 @@
+/**
+ * Min Priority Queue
+ *  - Implemented using Min Binary Heap
+ *  - In it, parent nodes are always smaller than child nodes
+ *  - Implemented using array
+ *      - For a node at index `n`
+ *      - Left Child node is at index `2n`
+ *      - Right Child node is at index `2n+1`
+ *      - For any node `n`, parent is at index `n/2`
+ *
+ *  - Enqueue a node
+ *      - A node is Always inserted at end of the heap
+ *      - Then, it is bubbled up till it's parent has lower priority value
+ *      - This ensures that Min value is always at the top
+ *
+ *  - Dequeue a node
+ *      - A node is always removed from root which is index `1` (index 0 is not used)
+ *      - To remove the node, it's value is swapped with last node of array
+ *      - Then, this value is bubbled down, till we have min value at the top
+ */
+
 class Node {
     constructor(value, priority) {
         this.value = value
