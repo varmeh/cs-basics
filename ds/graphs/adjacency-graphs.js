@@ -38,6 +38,46 @@ class WeightedGraphs {
         }
         return false
     }
+
+    dijkstra(start, finish) {
+        // It is used to get node with min value
+        const queue = new PriorityQueue()
+
+        // Distances tracks distance of a node from `start` node
+        // In the beginning, only distance to start node is known which is 0
+        const distances = { start: 0 }
+
+        // Previous tracks node which is the shortest path to reach node
+        // - as search starts from `start`, it's previous node is set to null
+        const previous = { start: null }
+
+        queue.enqueue(start, 0)
+
+        while (!queue.isEmpty()) {
+            let min = queue.dequeue()
+
+            if (min === finish) {
+                // We have identified the min path to finish
+                // BUILD Path
+            }
+
+            for (let neighbour of Object.keys(this.adjacencyMaps[min])) {
+                console.log(neighbour)
+
+                // calculate distance to neighboring weight
+                let weightOfNeighbourFromMin = this.adjacencyMaps[min][neighbour]
+                neighbourWeight = distances[min] + weightOfNeighbourFromMin
+
+                if (!distances[neighbour]) {
+                    // this is the only path discovered to neighbour yet
+                    distances[neighbour] = neighbourWeight
+                    previous[neighbour] = min
+                } else if (neighbourWeight < distances[neighbour]) {
+                    // the new path is smaller. update accordingly
+                }
+            }
+        }
+    }
 }
 
 const g = new WeightedGraphs()
@@ -51,11 +91,13 @@ g.addVertex('F')
 
 g.addEdge('A', 'B', 4)
 g.addEdge('A', 'C', 2)
-g.addEdge('C', 'D', 2)
 g.addEdge('B', 'E', 3)
+g.addEdge('C', 'D', 2)
+g.addEdge('C', 'F', 4)
 g.addEdge('D', 'E', 3)
 g.addEdge('D', 'F', 1)
 g.addEdge('E', 'F', 1)
-g.addEdge('C', 'F', 4)
 
 console.log(g)
+
+g.dijkstra('A', 'E')
