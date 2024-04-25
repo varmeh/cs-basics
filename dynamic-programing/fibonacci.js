@@ -70,13 +70,13 @@ console.log(`Fib Tabulation for 100 - ${fibTabulation(100)}`)
 function fibTabulationOptimized(n) {
     const table = [0, 1, -1]
 
-    const tablePosition = n => n % 3
+    const tablePos = n => n % 3
 
     for (let i = 2; i <= n; i++) {
-        table[tablePosition(i)] = table[tablePosition(i - 2)] + table[tablePosition(i - 1)]
+        table[tablePos(i)] = table[tablePos(i - 2)] + table[tablePos(i - 1)]
     }
 
-    return table[tablePosition(n)]
+    return table[tablePos(n)]
 }
 
 console.log(`Fib Tabulation Optimized for 100 - ${fibTabulationOptimized(100)}`)
