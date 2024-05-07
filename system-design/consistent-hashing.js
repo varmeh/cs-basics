@@ -1,91 +1,129 @@
 const crypto = require('crypto')
 
-class ConsistentHashing {
-    constructor(shards, nodesPerShard = 100) {
-        this.ring = new Map() // Used to map virtualNodeHash to shard
-        this.shards = shards // List of shards/servers
-        this.virtualNodesPerShard = nodesPerShard // Recommended to use 100-200 virtual nodes per shard
-
-        this._modulo = 1000 // Size of the hash space or the number of slots in the ring. Usually 3 to 4 times to number of virtual nodes
-
-        this.initializeRing()
-        this._printStructures()
+class BasicConsistentHashing {
+    constructor() {
+        this.ring = {}
+        this.sortedKeys = []
+        this.hashSpace = 1001 // division by this number limits hash space to 1000
     }
 
-    // Populates the hash ring with virtual nodes for each shard
-    initializeRing() {
-        this.shards.forEach(shard => {
-            // Creates virtual nodes for each shard
-            for (let i = 0; i < this.virtualNodesPerShard; i++) {
-                // Generates a unique key for each virtual node
-                const virtualNodeKey = `${shard}:${i}`
-
-                // Computes the hash for the virtual node key
-                const hash = this.hashFunction(virtualNodeKey)
-
-                // console.log(`Virtual Node Key: ${virtualNodeKey}, Hash: ${hash}, Shard: ${shard}`)
-                this.ring.set(hash, shard)
-            }
-        })
-
-        // Stores the sorted list of hash values to facilitate lookup
-        this.sortedHashes = Array.from(this.ring.keys()).sort((a, b) => a - b)
-    }
-
-    _printStructures() {
-        // Code uses 2 DS for its implementation
-        // 1. Map - ring. It is used to identify the shard for a given nodeHash value
-        console.log('\nRing:')
-        console.log('  <NodeHash: Shard Number>')
-        this.ring.forEach((value, key) => {
-            console.log(`  ${key}: ${value}`)
-        })
-
-        // 2. Array - sortedHashes. It is used to identify the virtualNode hash for a given keyHash value
-        console.log(`\nSorted Virtual Node Hashes: ${this.sortedHashes}\n`)
-    }
-
-    hashFunction(key) {
-        // Uses SHA-256 to hash the key and returns a 32-bit integer hash value
+    hash(key) {
         const hash = crypto.createHash('sha256').update(key).digest('hex')
-        const hashIntegerValue = parseInt(hash, 16) % this._modulo
 
-        // console.log(`Key: ${key}, Hash: ${hash}, Hash Integer Value: ${hashIntegerValue}`)
+        // Division by hashspace is used only for demo
+        // Not required in real world large scale apps
+        const hashIntegerValue = parseInt(hash, 16) % this.hashSpace
+
         return hashIntegerValue
     }
 
-    getShard(key) {
-        const keyHash = this.hashFunction(key)
+    addNode(node) {
+        const point = this.hash(node)
+        this.ring[point] = node
+        this.sortedKeys = Object.keys(this.ring)
+            .map(Number)
+            .sort((a, b) => a - b)
+        console.log(`Node ${node} added at point ${point}`)
+    }
 
-        // Now search for the first nodeHash in the sortedHashes array which is greater than or equal to keyHash
-        const nodeIndex = this.sortedHashes.findIndex(nodeHash => keyHash <= nodeHash)
+    printNodeHashData() {
+        console.log(`\nNode Ring Hash Order: ${this.sortedKeys}`)
+        console.log('Mapping of Hash Space with nodes:', this.ring)
+    }
 
-        // Wrap Around - Array.findIndex() -> -1 if keyHash is greator than all nodeHashes
-        // In this case, it would be mapped to the first node
-        // So, nodeHash would be 0 if nodeIndex is -1 else nodeIndex
-        const nodeHash = this.sortedHashes[nodeIndex === -1 ? 0 : nodeIndex]
+    removeNode(node) {
+        const point = this.hash(node)
+        delete this.ring[point]
+        this.sortedKeys = Object.keys(this.ring)
+            .map(Number)
+            .sort((a, b) => a - b)
+        console.log(`Node ${node} removed from point ${point}`)
+    }
 
-        // console.log(`Key: ${key}, Key Hash: ${keyHash}, Node Index: ${nodeIndex}, Node Hash: ${nodeHash}`)
-        return this.ring.get(nodeHash)
+    findNode(item) {
+        const itemHashValue = this.hash(item)
+        for (let nodeHashValue of this.sortedKeys) {
+            if (nodeHashValue >= itemHashValue) {
+                return this.ring[nodeHashValue]
+            }
+        }
+        return this.ring[keys[0]] // Wrap around to the first node
     }
 }
 
-/*----------------- Demo Code -----------------*/
+// Basic Consistent Hashing Demo
+const basicHashRing = new BasicConsistentHashing()
+basicHashRing.addNode('Node1')
+basicHashRing.addNode('Node2')
+basicHashRing.addNode('Node3')
 
-// Define shards
-const shards = ['shard1', 'shard2', 'shard3']
-const ch = new ConsistentHashing(shards, 10)
+basicHashRing.printNodeHashData()
 
-// Simulate adding URLs
-const urls = ['url1', 'url2', 'url3', 'url4', 'url5']
-urls.forEach(url => {
-    const shard = ch.getShard(url)
-    console.log(`URL ${url} is stored in ${shard}`)
-})
+console.log(`\nKey 'alpha' is managed by ${basicHashRing.findNode('alpha')}`)
+console.log(`Key 'beta' is managed by ${basicHashRing.findNode('beta')}`)
 
-// Simulate retrieving the same URLs to demonstrate consistent hashing
-console.log('\nRetrieving URLs...')
-urls.forEach(url => {
-    const shard = ch.getShard(url)
-    console.log(`URL ${url} is retrieved from ${shard}`)
-})
+console.log('\nRemove Node2')
+basicHashRing.removeNode('Node2')
+basicHashRing.printNodeHashData()
+
+console.log(`\nKey 'alpha' is managed by ${basicHashRing.findNode('alpha')}`)
+console.log(`Key 'beta' is managed by ${basicHashRing.findNode('beta')}`)
+
+/* ---------------- Hashing With Virtual Nodes ------------------------------ */
+
+class ConsistentHashingWithVNodes {
+    constructor(vnodeCount = 100) {
+        this.vnodeCount = vnodeCount
+        this.ring = {}
+        this.sortedKeys = []
+        this.hashSpace = 1001 // division by this number limits hash space to 1000
+    }
+
+    hash(key) {
+        const hash = crypto.createHash('sha256').update(key).digest('hex')
+
+        // Division by hashspace is used only for demo
+        // Not required in real world large scale apps
+        const hashIntegerValue = parseInt(hash, 16) % this.hashSpace
+
+        return hashIntegerValue
+    }
+
+    printNodeHashData() {
+        console.log(`\nNode Ring Hash Order: ${this.sortedKeys}`)
+        console.log('Mapping of Hash Space with nodes:', this.ring)
+    }
+
+    addNode(node) {
+        for (let i = 0; i < this.vnodeCount; i++) {
+            const virtualNode = `${node}#${i}`
+            const point = this.hash(virtualNode)
+            this.ring[point] = node
+            console.log(`Virtual node ${virtualNode} added at point ${point}`)
+        }
+        this.sortedKeys = Object.keys(this.ring)
+            .map(Number)
+            .sort((a, b) => a - b)
+    }
+
+    findNode(key) {
+        const itemHashValue = this.hash(key)
+        for (let nodeHashValue of this.sortedKeys) {
+            if (nodeHashValue >= itemHashValue) {
+                return this.ring[nodeHashValue]
+            }
+        }
+        return this.ring[this.sortedKeys[0]] // Wrap around to the first node
+    }
+}
+
+// Consistent Hashing Demo with Virtual Nodes
+const hashRingWithVNodes = new ConsistentHashingWithVNodes(5)
+hashRingWithVNodes.addNode('Node1')
+hashRingWithVNodes.addNode('Node2')
+hashRingWithVNodes.addNode('Node3')
+
+hashRingWithVNodes.printNodeHashData()
+
+console.log(`\nKey 'alpha' is managed by ${hashRingWithVNodes.findNode('alpha')}`)
+console.log(`Key 'beta' is managed by ${hashRingWithVNodes.findNode('beta')}`)
