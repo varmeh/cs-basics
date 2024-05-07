@@ -41,13 +41,13 @@ class BasicConsistentHashing {
     }
 
     findNode(item) {
-        const itemHashValue = this.hash(item)
-        for (let nodeHashValue of this.sortedKeys) {
-            if (nodeHashValue >= itemHashValue) {
-                return this.ring[nodeHashValue]
+        const itemHash = this.hash(item)
+        for (let nodeHash of this.sortedKeys) {
+            if (nodeHash >= itemHash) {
+                return this.ring[nodeHash]
             }
         }
-        return this.ring[keys[0]] // Wrap around to the first node
+        return this.ring[this.sortedKeys[0]] // Wrap around to the first node
     }
 }
 
@@ -107,10 +107,10 @@ class ConsistentHashingWithVNodes {
     }
 
     findNode(key) {
-        const itemHashValue = this.hash(key)
-        for (let nodeHashValue of this.sortedKeys) {
-            if (nodeHashValue >= itemHashValue) {
-                return this.ring[nodeHashValue]
+        const itemHash = this.hash(key)
+        for (let nodeHash of this.sortedKeys) {
+            if (nodeHash >= itemHash) {
+                return this.ring[nodeHash]
             }
         }
         return this.ring[this.sortedKeys[0]] // Wrap around to the first node
