@@ -199,7 +199,7 @@ class DLL {
         } else {
             // Middle Node
             const nodePrev = node.prev
-            nodePrev = node.next
+            nodePrev.next = node.next
             const nodeNext = node.next
             nodeNext.prev = node.prev
         }
