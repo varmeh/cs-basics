@@ -1,5 +1,4 @@
 const express = require('express')
-const TokenBucketRateLimiter = require('./tokenBucketRateLimiter') // Import the TokenBucketRateLimiter class
 
 const app = express()
 const port = 3000
