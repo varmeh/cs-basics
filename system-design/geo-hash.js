@@ -40,15 +40,19 @@ function getGeohash(latitude, longitude, precision = 12) {
     const totalBits = precision * 5 // each precision value is represented by base32 number which used 5 bits
 
     // Divide by 2 to get the bit length for latitude and longitude
-    const bitLength = totalBits / 2
+    const bitLen = Math.ceil(totalBits / 2)
 
     const latRange = [-90.0, 90.0]
     const lonRange = [-180.0, 180.0]
-    const latBits = encodeBinary(latitude, latRange, bitLength)
-    const lonBits = encodeBinary(longitude, lonRange, bitLength)
+    const latBits = encodeBinary(latitude, latRange, bitLen)
+    const lonBits = encodeBinary(longitude, lonRange, bitLen)
 
     const interleavedBits = interleaveBits(latBits, lonBits)
     const base32Hash = binaryToBase32(interleavedBits)
+
+    console.log(`latBits: ${latBits}`)
+    console.log(`lonBits: ${lonBits}`)
+    console.log(`interleavedBits: ${interleavedBits}`)
 
     return base32Hash.substring(0, precision)
 }
