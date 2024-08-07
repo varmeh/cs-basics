@@ -18,6 +18,24 @@
  *
  * Reference - https://medium.com/@prefixyteam/how-we-built-prefixy-a-scalable-prefix-search-service-for-powering-autocomplete-c20f98e2eff1
  *
+ *
+ * Docker Setup Instructions for Testing:
+ *
+ * # Pull the Redis image from Docker Hub
+ * docker pull redis
+ *
+ * # Run a Redis container
+ * docker run --name redis-test -d -p 6379:6379 redis
+ *
+ * # Access Redis CLI to inspect stored data
+ * docker exec -it redis-test redis-cli
+ *
+ * # List all keys
+ * keys *
+ *
+ * # Inspect the contents of a key
+ * zrange prefix:ca 0 -1 withscores
+ *
  */
 
 const redis = require('redis')
@@ -29,6 +47,9 @@ class PrefixHashTree {
         this.client.on('error', err => {
             console.error('Error connecting to Redis:', err)
         })
+
+        // Connect the client
+        this.client.connect()
     }
 
     /**
@@ -36,18 +57,19 @@ class PrefixHashTree {
      * @param {string} word - The word to add
      * @param {number} frequency - The frequency of the word
      */
-    addWord(word, frequency) {
-        // Iterate through each prefix of the word
+    async addWord(word, frequency) {
         for (let i = 1; i <= word.length; i++) {
-            const prefix = word.slice(0, i) // Get the current prefix
-            const key = `prefix:${prefix}` // Generate the Redis key for the prefix
+            const prefix = word.slice(0, i)
+            const key = `prefix:${prefix}`
 
-            // Add the word to the sorted set for the current prefix with the given frequency
-            this.client.zadd(key, frequency, word, err => {
-                if (err) {
-                    console.error('Error adding word to sorted set:', err)
-                }
-            })
+            try {
+                await this.client.zAdd(key, {
+                    score: frequency,
+                    value: word
+                })
+            } catch (err) {
+                console.error('Error adding word to sorted set:', err)
+            }
         }
     }
 
@@ -56,18 +78,19 @@ class PrefixHashTree {
      * @param {string} word - The word to update
      * @param {number} frequency - The new frequency of the word
      */
-    updateFrequency(word, frequency) {
-        // Iterate through each prefix of the word
+    async updateFrequency(word, frequency) {
         for (let i = 1; i <= word.length; i++) {
-            const prefix = word.slice(0, i) // Get the current prefix
-            const key = `prefix:${prefix}` // Generate the Redis key for the prefix
+            const prefix = word.slice(0, i)
+            const key = `prefix:${prefix}`
 
-            // Update the word's frequency in the sorted set for the current prefix
-            this.client.zadd(key, frequency, word, err => {
-                if (err) {
-                    console.error('Error updating word frequency in sorted set:', err)
-                }
-            })
+            try {
+                await this.client.zAdd(key, {
+                    score: frequency,
+                    value: word
+                })
+            } catch (err) {
+                console.error('Error updating word frequency in sorted set:', err)
+            }
         }
     }
 
@@ -77,39 +100,36 @@ class PrefixHashTree {
      * @param {number} k - The number of top suggestions to return
      * @param {function} callback - The callback function to handle the result
      */
-    getSuggestions(prefix, k, callback) {
-        const key = `prefix:${prefix}` // Generate the Redis key for the prefix
+    async getSuggestions(prefix, k) {
+        const key = `prefix:${prefix}`
 
-        // Retrieve the top k suggestions from the sorted set for the given prefix
-        this.client.zrevrange(key, 0, k - 1, 'WITHSCORES', (err, result) => {
-            if (err) {
-                console.error('Error getting suggestions from sorted set:', err)
-                return callback(err, null)
-            }
-
-            // Process the results and format them as an array of suggestions
-            const suggestions = []
-            for (let i = 0; i < result.length; i += 2) {
-                suggestions.push({ word: result[i], frequency: parseInt(result[i + 1], 10) })
-            }
-            callback(null, suggestions) // Call the callback with the suggestions
-        })
+        try {
+            const result = await this.client.zRangeWithScores(key, 0, k - 1, { REV: true })
+            return result.map(({ value, score }) => ({
+                word: value,
+                frequency: score
+            }))
+        } catch (err) {
+            console.error('Error getting suggestions from sorted set:', err)
+            throw err
+        }
     }
 }
 
 // Usage example
-const prefixHashTree = new PrefixHashTree()
-prefixHashTree.addWord('car', 5)
-prefixHashTree.addWord('cat', 3)
-prefixHashTree.addWord('cart', 4)
-prefixHashTree.addWord('carbon', 2)
+;(async () => {
+    const prefixHashTree = new PrefixHashTree()
+    await prefixHashTree.addWord('car', 5)
+    await prefixHashTree.addWord('cat', 3)
+    await prefixHashTree.addWord('cart', 4)
+    await prefixHashTree.addWord('carbon', 2)
 
-prefixHashTree.updateFrequency('car', 7)
+    await prefixHashTree.updateFrequency('car', 7)
 
-prefixHashTree.getSuggestions('ca', 3, (err, suggestions) => {
-    if (err) {
-        console.error('Error getting suggestions:', err)
-    } else {
+    try {
+        const suggestions = await prefixHashTree.getSuggestions('ca', 3)
         console.log('Top suggestions for "ca":', suggestions)
+    } catch (err) {
+        console.error('Error getting suggestions:', err)
     }
-})
+})()

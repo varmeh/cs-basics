@@ -1,0 +1,15 @@
+{
+    "name": "prefix-hash-tree",
+    "version": "1.0.0",
+    "description": "",
+    "main": "prefix-hash-tree-with-redis",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "redis": "^4.7.0"
+    }
+}
