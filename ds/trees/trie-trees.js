@@ -1,3 +1,5 @@
+// Reference Tutorial for trie - https://medium.com/@prefixyteam/how-we-built-prefixy-a-scalable-prefix-search-service-for-powering-autocomplete-c20f98e2eff1
+
 class TrieNode {
     constructor() {
         // Each node stores its children in a dictionary
