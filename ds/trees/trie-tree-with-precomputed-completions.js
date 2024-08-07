@@ -3,6 +3,10 @@
  * - Completions are added to each parent node in sorted order
  * - Essentially, completions are added & updated on addition or updation of a word & word frequency respectively
  * - This enables read query time of O(p), where p is length of prefix
+ *
+ * - Another optimization
+ *  - Limiting the number of completions. Let say we limit it to top-5 only
+ *  - This would optimise space. Also, addition / updation would be faster
  */
 
 class TrieNode {
