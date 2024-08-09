@@ -43,23 +43,37 @@
  */
 
 const express = require('express')
-const redis = require('redis')
-const crypto = require('crypto')
+const { createClient } = require('redis') // Import Redis client
+const crypto = require('crypto') // Import crypto module for hashing
 
 const app = express()
-app.use(express.json())
+app.use(express.json()) // Use JSON middleware to parse JSON request bodies
 
-const redisClient = redis.createClient()
+// Create a Redis client using the createClient method
+const redisClient = createClient()
 
-// Function to calculate Bloom filter size and number of hash functions
+// Handle any Redis client errors
+redisClient.on('error', err => console.log('Redis Client Error', err))
+
+// Connect to Redis asynchronously
+;(async () => {
+    await redisClient.connect() // Connect the Redis client
+})()
+
+/**
+ * Function to calculate Bloom filter parameters
+ * @param {number} numUsers - The expected number of users
+ * @param {number} fpr - The desired false positive rate (FPR)
+ * @returns {object} - An object containing the Bloom filter size and number of hash functions
+ */
 function calculateBloomFilterParameters(numUsers, fpr) {
     const ln2Squared = Math.log(2) ** 2
-    const size = Math.ceil(-(numUsers * Math.log(fpr)) / ln2Squared)
-    const numHashFunctions = Math.ceil((size / numUsers) * Math.log(2))
+    const size = Math.ceil(-(numUsers * Math.log(fpr)) / ln2Squared) // Calculate size of Bloom filter
+    const numHashFunctions = Math.ceil((size / numUsers) * Math.log(2)) // Calculate the number of hash functions
     return { size, numHashFunctions }
 }
 
-// Initialize the Bloom filter
+// Bloom filter configuration object
 let bloomFilter = {
     size: 0,
     numHashFunctions: 0,
@@ -67,70 +81,81 @@ let bloomFilter = {
     setKey: ''
 }
 
+/**
+ * Function to initialize the Bloom filter with given parameters
+ * @param {number} numUsers - The expected number of users
+ * @param {number} fpr - The desired false positive rate (FPR)
+ */
 function initBloomFilter(numUsers, fpr) {
     const { size, numHashFunctions } = calculateBloomFilterParameters(numUsers, fpr)
-    bloomFilter.size = size
-    bloomFilter.numHashFunctions = numHashFunctions
+    bloomFilter.size = size // Set Bloom filter size
+    bloomFilter.numHashFunctions = numHashFunctions // Set number of hash functions
     bloomFilter.keys = Array(numHashFunctions)
         .fill()
-        .map((_, i) => `bf:key:${i}`)
-    bloomFilter.setKey = `bf:userset`
-
-    // Initialize the bitmap in Redis (optional if you want to explicitly set size)
-    redisClient.setbit(bloomFilter.setKey, size - 1, 0)
+        .map((_, i) => `bf:key:${i}`) // Create Redis keys for each hash function
+    bloomFilter.setKey = `bf:userset` // Set the key for the Bloom filter in Redis
 }
 
-// Hash function generator
+/**
+ * Function to hash a value with a given seed using SHA-256
+ * @param {string} value - The value to hash
+ * @param {string} seed - The seed for the hash function
+ * @returns {number} - The hashed position within the Bloom filter
+ */
 function hashWithSeed(value, seed) {
-    const hash = crypto.createHash('sha256')
-    hash.update(seed + value)
-    return parseInt(hash.digest('hex'), 16) % bloomFilter.size
+    const hash = crypto.createHash('sha256') // Create a SHA-256 hash
+    hash.update(seed + value) // Update the hash with the seed and value
+    return parseInt(hash.digest('hex'), 16) % bloomFilter.size // Return the hash modulo the Bloom filter size
 }
 
-// Add a username to the Bloom filter
-function addUsername(username) {
+/**
+ * Function to add a username to the Bloom filter
+ * @param {string} username - The username to add
+ */
+async function addUsername(username) {
     for (let i = 0; i < bloomFilter.numHashFunctions; i++) {
-        const position = hashWithSeed(username, i.toString())
-        redisClient.setbit(bloomFilter.setKey, position, 1)
+        const position = hashWithSeed(username, i.toString()) // Calculate position for each hash function
+        await redisClient.setBit(bloomFilter.setKey, position, 1) // Set the bit in the Bloom filter
     }
 }
 
-// Check if a username might be in the Bloom filter
-function isUsernameTaken(username, callback) {
-    let bitChecks = []
+/**
+ * Function to check if a username might be in the Bloom filter
+ * @param {string} username - The username to check
+ * @returns {Promise<boolean>} - Returns true if the username might be taken, false otherwise
+ */
+async function isUsernameTaken(username) {
+    let isTaken = true
     for (let i = 0; i < bloomFilter.numHashFunctions; i++) {
-        const position = hashWithSeed(username, i.toString())
-        bitChecks.push(['getbit', bloomFilter.setKey, position])
-    }
-    redisClient.multi(bitChecks).exec((err, replies) => {
-        if (err) {
-            callback(false)
-        } else {
-            callback(replies.every(bit => bit === 1))
+        const position = hashWithSeed(username, i.toString()) // Calculate position for each hash function
+        const bitValue = await redisClient.getBit(bloomFilter.setKey, position) // Get the bit from the Bloom filter
+        if (bitValue === 0) {
+            isTaken = false // If any bit is 0, the username is definitely not taken
+            break
         }
-    })
+    }
+    return isTaken // Return true if all bits are set, indicating the username might be taken
 }
 
 // Initialize Bloom filter with example parameters
-initBloomFilter(100, 0.1)
+initBloomFilter(1000, 0.01) // Initialize with 100 users and 1% FPR
 
-// API to add a username
-app.post('/add', (req, res) => {
+// API endpoint to add a username to the Bloom filter
+app.post('/add', async (req, res) => {
     const { username } = req.body
-    addUsername(username)
-    res.status(200).send({ success: true })
+    await addUsername(username) // Add the username to the Bloom filter
+    res.status(200).send({ success: true }) // Send success response
 })
 
-// API to check if a username is taken
-app.get('/check', (req, res) => {
+// API endpoint to check if a username is taken
+app.get('/check', async (req, res) => {
     const { username } = req.query
-    isUsernameTaken(username, isTaken => {
-        res.status(200).send({ taken: isTaken })
-    })
+    const taken = await isUsernameTaken(username) // Check if the username might be taken
+    res.status(200).send({ taken }) // Send response indicating whether the username is taken
 })
 
-// Start the server
+// Start the Express server
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`) // Log server start
 })
