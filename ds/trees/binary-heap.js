@@ -17,7 +17,7 @@ class BinaryHeap {
         return 2 * n
     }
 
-    _righChildIndex(n) {
+    _rightChildIndex(n) {
         return 2 * n + 1
     }
 
@@ -57,31 +57,24 @@ class BinaryHeap {
     // Move smaller parent down
     _bubbleDown(index) {
         let pidx = index // parent index
-        let lidx = null // left child index
-        let ridx = null // right child index
-        let largestidx = null // index of largest of 3 values - parent, left & right
 
-        while (true) {
-            lidx = this._leftChildIndex(pidx)
-            ridx = this._righChildIndex(pidx)
-            largestidx = pidx
+        while (pidx < Math.floor(this.heap.length / 2)) {
+            let lidx = this._leftChildIndex(pidx)
+            let ridx = this._rightChildIndex(pidx)
 
-            // Check if left child exists and is greater than the parent
-            if (lidx < this.heap.length && this.heap[lidx] > this.heap[largestidx]) {
-                largestidx = lidx
-            }
+            let leftValue = this.heap[lidx]
+            let rightValue = this.heap[ridx]
+            let parValue = this.heap[pidx]
 
-            // Check if right child exists and is greater than the largest so far (parent or left child)
-            if (ridx < this.heap.length && this.heap[ridx] > this.heap[largestidx]) {
-                largestidx = ridx
-            }
+            // Check if both childs are smaller
+            if (leftValue < parValue && rightValue < parValue) break
 
-            // If the largest value is still the parent, the heap property is satisfied
-            if (largestidx === pidx) break
+            // Select bigger index for swaping
+            let swapIndex = leftValue > rightValue ? lidx : ridx
 
             // If not, swap the parent with the largest child and continue
-            this._swap(pidx, largestidx)
-            pidx = largestidx // Move down to the largest child's position
+            this._swap(pidx, swapIndex)
+            pidx = swapIndex // Move down to the largest child's position
         }
     }
 
@@ -91,7 +84,7 @@ class BinaryHeap {
         if (this.isEmpty()) return null
 
         // Fetch the node at the root which has the highest priority (max value in a max-heap)
-        const priorityNode = this.heap[1]
+        const nodeValue = this.heap[1]
 
         // Replace the root with the last element in the heap
         const lastElement = this.heap.pop()
@@ -102,7 +95,7 @@ class BinaryHeap {
             this._bubbleDown(1)
         }
 
-        return priorityNode.value
+        return nodeValue
     }
 
     isEmpty() {

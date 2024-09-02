@@ -226,7 +226,7 @@ class BST {
         if (node.right) this._preorderHelper(node.right, result)
     }
 
-    // Traversal Order - (root, left, right)
+    // Traversal Order - NLR - (node, left, right)
     preorderTraversal() {
         if (!this.root) return []
 
@@ -242,7 +242,7 @@ class BST {
         result.push(node.value)
     }
 
-    // Traversal Order - (left, right, root)
+    // Traversal Order - LRN - (left, right, node)
     postorderTraversal() {
         if (!this.root) return []
 
@@ -258,7 +258,7 @@ class BST {
         if (node.right) this._inorderHelper(node.right, result)
     }
 
-    // Traversal Order - (left, root, right)
+    // Traversal Order - LNR - (left, node, right)
     // Note - It returns a sorted list in ascending order as output
     // Change Traversal Order to (right, root, left) to get a descending order list
     inorderTraversal() {
