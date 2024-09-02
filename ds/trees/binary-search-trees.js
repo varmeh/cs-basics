@@ -297,13 +297,13 @@ class BST {
 
         while (stack.length) {
             let node = stack.pop()
-            result.unshift(node.value)
+            result.push(node.value)
 
             if (node.left) stack.push(node.left)
             if (node.right) stack.push(node.right)
         }
 
-        return result
+        return result.reverse()
     }
 
     // Not recommended. Done just for fun
