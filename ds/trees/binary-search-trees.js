@@ -271,7 +271,7 @@ class BST {
     }
 
     // Not recommended. Done just for fun
-    preorderTraversalLinear() {
+    preorderTraversalIterative() {
         const result = []
         const stack = [this.root]
 
@@ -287,34 +287,27 @@ class BST {
         return result
     }
 
-    /****************** Linear Methods ************************/
+    /****************** Iterative Methods ************************/
     // Not recommended for interview as each implementation is different
 
     // Not recommended. Done just for fun
-    postorderTraversalLinear() {
+    postorderTraversalIterative() {
+        const stack = [this.root]
         const result = []
 
-        let stack1 = [this.root]
-        let stack2 = []
+        while (stack.length) {
+            let node = stack.pop()
+            result.unshift(node.value)
 
-        while (stack1.length) {
-            let node = stack1.pop()
-            stack2.push(node)
-
-            if (node.left) stack1.push(node.left)
-            if (node.right) stack1.push(node.right)
-        }
-
-        while (stack2.length) {
-            let node = stack2.pop()
-            result.push(node.value)
+            if (node.left) stack.push(node.left)
+            if (node.right) stack.push(node.right)
         }
 
         return result
     }
 
     // Not recommended. Done just for fun
-    inorderTraversalLinear() {
+    inorderTraversalIterative() {
         const result = []
         const stack = []
         let current = this.root
@@ -356,13 +349,13 @@ console.log(`Value 18 in tree: ${tree.search(18)}`)
 
 console.log(tree.bfsTraversal())
 console.log(tree.preorderTraversal())
-console.log(tree.preorderTraversalLinear())
+console.log(tree.preorderTraversalIterative())
 
 console.log(tree.postorderTraversal())
-console.log(tree.postorderTraversalLinear())
+console.log(tree.postorderTraversalIterative())
 
 console.log(tree.inorderTraversal())
-console.log(tree.inorderTraversalLinear())
+console.log(tree.inorderTraversalIterative())
 
 // Test scenarios
 console.assert(tree.successor(10) === 11, 'Successor of 10 should be 11.')
