@@ -58,13 +58,14 @@ class BinaryHeap {
     _bubbleDown(index) {
         let pidx = index // parent index
 
-        while (pidx < Math.floor(this.heap.length / 2)) {
+        while (pidx < this.heap.length) {
             let lidx = this._leftChildIndex(pidx)
             let ridx = this._rightChildIndex(pidx)
 
-            let leftValue = this.heap[lidx]
-            let rightValue = this.heap[ridx]
             let parValue = this.heap[pidx]
+
+            let leftValue = lidx < this.heap.length ? this.heap[lidx] : -Infinity
+            let rightValue = ridx < this.heap.length ? this.heap[ridx] : -Infinity
 
             // Check if both childs are smaller
             if (leftValue < parValue && rightValue < parValue) break
