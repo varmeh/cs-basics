@@ -11,24 +11,47 @@
  *  - Else use Adjacency Maps
  */
 
-const PriorityQueue = require('../trees/min-priority-queue')
+class PriorityQueue {
+    constructor() {
+        this.queue = []
+    }
 
-class WeightedGraphs {
+    get size() {
+        return this.queue.length
+    }
+
+    enqueue(value, priority) {
+        this.queue.push([value, priority])
+        this._sort()
+    }
+
+    dequeue() {
+        return this.queue.shift()[0]
+    }
+
+    updatePriority(value, newPriority) {
+        for (let i = 0; i < this.queue.length; i++) {
+            if (this.queue[i][0] === value) {
+                this.queue[i][1] = newPriority
+                return this._sort()
+            }
+        }
+    }
+
+    _sort() {
+        this.queue.sort((a, b) => a[1] - b[1])
+    }
+}
+
+class Graph {
     constructor() {
         this.adjacencyMaps = {}
     }
 
-    /**
-     * Add a new vertex. This vertex will have 0 edge in the beginning
-     */
     addVertex(vertex) {
         if (!this.adjacencyMaps[vertex]) this.adjacencyMaps[vertex] = {}
     }
 
-    /**
-     * Add edge between 2 vertices
-     * This works only if both vertices exists
-     */
     addEdge(v1, v2, weight) {
         // Both vertex exists
         if (this.adjacencyMaps[v1] && this.adjacencyMaps[v2]) {
@@ -39,48 +62,57 @@ class WeightedGraphs {
         return false
     }
 
-    dijkstra(start, finish) {
-        // It is used to get node with min value
-        const queue = new PriorityQueue()
+    shortestPath(start, end) {
+        const distances = {} // Tracks the shortest distance to each vertex from the start vertex
+        const previous = {} // Tracks the previous vertex in the shortest path
+        const priorityQueue = new PriorityQueue() // Min-priority queue to process the vertex with the shortest distance next
+        const visited = {} // Tracks visited vertices
 
-        // Distances tracks distance of a node from `start` node
-        // In the beginning, only distance to start node is known which is 0
-        const distances = { start: 0 }
+        distances[start] = 0
+        previous[start] = null
+        priorityQueue.enqueue(start, 0)
 
-        // Previous tracks node which is the shortest path to reach node
-        // - as search starts from `start`, it's previous node is set to null
-        const previous = { start: null }
+        while (priorityQueue.size > 0) {
+            let currentVertex = priorityQueue.dequeue()
+            visited[currentVertex] = true
 
-        queue.enqueue(start, 0)
+            if (currentVertex === end) {
+                // Construct the shortest path by backtracking through `previous`
+                let path = []
+                let tempVertex = end
 
-        while (!queue.isEmpty()) {
-            let min = queue.dequeue()
+                while (tempVertex) {
+                    path.push(tempVertex)
+                    tempVertex = previous[tempVertex]
+                }
 
-            if (min === finish) {
-                // We have identified the min path to finish
-                // BUILD Path
+                return [path.reverse(), distances[end]]
             }
 
-            for (let neighbour of Object.keys(this.adjacencyMaps[min])) {
-                console.log(neighbour)
+            // Explore neighbors of the current vertex
+            for (let neighbor of Object.keys(this.adjacencyMaps[currentVertex])) {
+                if (visited[neighbor]) continue
 
                 // calculate distance to neighboring weight
-                let weightOfNeighbourFromMin = this.adjacencyMaps[min][neighbour]
-                neighbourWeight = distances[min] + weightOfNeighbourFromMin
+                let currentDistance = distances[currentVertex] + this.adjacencyMaps[currentVertex][neighbor]
 
-                if (!distances[neighbour]) {
-                    // this is the only path discovered to neighbour yet
-                    distances[neighbour] = neighbourWeight
-                    previous[neighbour] = min
-                } else if (neighbourWeight < distances[neighbour]) {
-                    // the new path is smaller. update accordingly
+                if (distances[neighbor] === undefined) {
+                    distances[neighbor] = currentDistance
+                    previous[neighbor] = currentVertex
+                    priorityQueue.enqueue(neighbor, distances[neighbor])
+                } else if (currentDistance < distances[neighbor]) {
+                    // This new distance is shorter. So, update neighbor
+                    distances[neighbor] = currentDistance
+                    previous[neighbor] = currentVertex
+                    priorityQueue.updatePriority(neighbor, distances[neighbor])
                 }
             }
         }
+        return [[], Infinity] // If no path is found
     }
 }
 
-const g = new WeightedGraphs()
+const g = new Graph()
 
 g.addVertex('A')
 g.addVertex('B')
@@ -100,4 +132,4 @@ g.addEdge('E', 'F', 1)
 
 console.log(g)
 
-g.dijkstra('A', 'E')
+console.log(g.shortestPath('A', 'E'))

@@ -86,6 +86,25 @@ class Graph {
         return result
     }
 
+    dfsRecurrsive2(start) {
+        const result = []
+        const visited = {}
+        const adjacencyList = this.adjacencyList
+
+        function dfs(vertex) {
+            if (!vertex || !adjacencyList[vertex]) return null
+            visited[vertex] = true
+            result.push(vertex)
+
+            adjacencyList[vertex].forEach(neighbour => {
+                if (!visited[neighbour]) return dfs(neighbour)
+            })
+        }
+        dfs(start)
+
+        return result
+    }
+
     /**
      * Performs a iterative depth-first search (DFS) starting from a given vertex.
      *
@@ -186,6 +205,8 @@ console.log(g.dfsRecurrsive('dls'))
 console.log(g.dfs('dls'))
 console.log(g.dfs('dallas'))
 console.log(g.dfs('dallas'))
+
+console.log(g.dfsRecurrsive2('dls'))
 
 const g1 = new Graph()
 
