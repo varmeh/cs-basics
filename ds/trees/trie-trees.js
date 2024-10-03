@@ -2,105 +2,78 @@
 
 class TrieNode {
     constructor() {
-        // Each node stores its children in a dictionary
-        this.children = {}
-        // Indicates if the node represents the end of a word
-        this.isEndOfWord = false
-        // Stores the frequency of the word ending at this node
-        this.frequency = 0
+        this.children = {} // To store child nodes
+        this.isEndOfWord = false // To mark the end of a word
+        this.frequency = 0 // To store the frequency of the word
     }
 }
 
 class Trie {
     constructor() {
-        // Initialize the Trie with a root node
-        this.root = new TrieNode()
+        this.root = new TrieNode() // The root node of the Trie
     }
 
-    // Adds a word to the Trie with the specified frequency
-    addWord(word, frequency = 1) {
-        let currentNode = this.root
-        for (const char of word) {
-            // If the character is not already a child, create a new TrieNode
-            if (!currentNode.children[char]) {
-                currentNode.children[char] = new TrieNode()
+    // Method to insert a word into the Trie with a given frequency
+    insert(word, frequency = 1) {
+        let node = this.root
+        for (let char of word) {
+            if (!node.children[char]) {
+                node.children[char] = new TrieNode() // Create a new node if char doesn't exist
             }
-            // Move to the child node
-            currentNode = currentNode.children[char]
+            node = node.children[char]
         }
-        // Mark the end of the word and set the frequency
-        currentNode.isEndOfWord = true
-        currentNode.frequency = frequency
+        node.isEndOfWord = true
+        node.frequency += frequency // Increment frequency by the given value (default is 1)
     }
 
-    // Updates the frequency of an existing word in the Trie
-    updateFrequency(word, frequency) {
-        let currentNode = this.root
-        for (const char of word) {
-            // If the character is not found, the word does not exist in the Trie
-            if (!currentNode.children[char]) {
-                return false // Word not found
-            }
-            // Move to the child node
-            currentNode = currentNode.children[char]
-        }
-        // Update the frequency if the word exists
-        if (currentNode.isEndOfWord) {
-            currentNode.frequency = frequency
-            return true
-        }
-        return false // Word not found
+    // Method to get all words starting with a given prefix, sorted by frequency and limited to k results
+    suggestions(prefix, k) {
+        let node = this._searchNode(prefix) // Find the node where the prefix ends
+        if (!node) return [] // If the prefix doesn't exist, return an empty array
+
+        let results = []
+        this._dfs(node, prefix, results) // Perform DFS from the node
+
+        // Sort by frequency in descending order, then alphabetically for ties
+        results.sort((a, b) =>
+            // Sorted by frequency. If same, frequency, sorted alphabaticallys
+            b[1] !== a[1] ? b[1] - a[1] : a[0].localeCompare(b[0])
+        )
+
+        return results.slice(0, k).map(e => e[0]) // Return the top k results
     }
 
-    // Returns the top 3 suggestions based on frequency for the given prefix
-    suggestions(prefix, k = 3) {
-        let currentNode = this.root
-        for (const char of prefix) {
-            // If the prefix is not found, return an empty list
-            if (!currentNode.children[char]) {
-                return [] // Prefix not found
-            }
-
-            // Move to the child node
-            currentNode = currentNode.children[char]
+    // Private helper method to search for a node corresponding to the last char of word/prefix
+    _searchNode(word) {
+        let node = this.root
+        for (let char of word) {
+            if (!node.children[char]) return null // Return null if the char doesn't exist
+            node = node.children[char] // Move to the next node
         }
-
-        // Collect all words starting from the current node
-        let completions = []
-        this._dfs(currentNode, prefix, completions)
-
-        // Sort completions by frequency in descending order
-        completions.sort((a, b) => b.frequency - a.frequency)
-
-        // Return the top k completions as suggestions
-        return completions.slice(0, k).map(suggestion => suggestion.word)
+        return node // Return the last node found
     }
 
-    // Helper method to perform a depth-first search to collect all words
-    _dfs(node, currentWord, completions) {
-        // If the node represents the end of a word, add it to the completions
-        if (node.isEndOfWord) {
-            completions.push({ word: currentWord, frequency: node.frequency })
-        }
+    // Private helper method to perform DFS and collect words along with their frequencies
+    _dfs(node, prefix, results) {
+        if (node.isEndOfWord) results.push([prefix, node.frequency]) // Add the word and its frequency
 
-        // Recursively visit all child nodes
-        for (const char in node.children) {
-            this._dfs(node.children[char], currentWord + char, completions)
+        for (let char in node.children) {
+            this._dfs(node.children[char], prefix + char, results) // Continue the search
         }
     }
 }
 
-// Usage example
-const trie = new Trie()
-trie.addWord('apple', 5)
-trie.addWord('app', 3)
-trie.addWord('apricot', 4)
-trie.addWord('april', 10)
-trie.addWord('apprisal', 12)
-trie.addWord('banana', 2)
-trie.addWord('application', 6)
+// Example usage
+let trie = new Trie()
+trie.insert('apple', 2) // Insert "apple" with a frequency of 2
+trie.insert('app', 1) // Insert "app" with a frequency of 1
+trie.insert('application', 1) // Insert "application" with default frequency of 1
+trie.insert('applet', 3) // Insert "applet" with a frequency of 3
+trie.insert('bat', 1)
+trie.insert('battle', 2)
 
-console.log(trie.suggestions('app')) // ["application", "apple", "app"]
-trie.updateFrequency('app', 7)
-console.log(trie.suggestions('app')) // ["app", "application", "apple"]
-console.log(trie.suggestions('ap', 4))
+console.log(trie.suggestions('app', 3))
+// Output: [{ word: 'applet', frequency: 3 }, { word: 'apple', frequency: 2 }, { word: 'app', frequency: 1 }]
+
+console.log(trie.suggestions('bat', 2))
+// Output: [{ word: 'battle', frequency: 2 }, { word: 'bat', frequency: 1 }]
