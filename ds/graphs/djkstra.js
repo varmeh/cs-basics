@@ -1,35 +1,3 @@
-class PriorityQueueOld {
-    constructor() {
-        this.queue = []
-    }
-
-    get size() {
-        return this.queue.length
-    }
-
-    insert(value, priority) {
-        this.queue.push([value, priority])
-        this._sort()
-    }
-
-    extractMin() {
-        return this.queue.shift()
-    }
-
-    updatePriority(value, newPriority) {
-        for (let i = 0; i < this.queue.length; i++) {
-            if (this.queue[i][0] === value) {
-                this.queue[i][1] = newPriority
-                return this._sort()
-            }
-        }
-    }
-
-    _sort() {
-        this.queue.sort((a, b) => a[1] - b[1])
-    }
-}
-
 class PriorityQueue {
     constructor() {
         this.queue = []
@@ -172,6 +140,38 @@ class Graph {
             }
         }
         return [[], Infinity] // If no path is found
+    }
+}
+
+class PriorityQueueOld {
+    constructor() {
+        this.queue = []
+    }
+
+    get size() {
+        return this.queue.length
+    }
+
+    insert(value, priority) {
+        this.queue.push([value, priority])
+        this._sort()
+    }
+
+    extractMin() {
+        return this.queue.shift()
+    }
+
+    updatePriority(value, newPriority) {
+        for (let i = 0; i < this.queue.length; i++) {
+            if (this.queue[i][0] === value) {
+                this.queue[i][1] = newPriority
+                return this._sort()
+            }
+        }
+    }
+
+    _sort() {
+        this.queue.sort((a, b) => a[1] - b[1])
     }
 }
 
