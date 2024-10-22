@@ -162,9 +162,9 @@ class PriorityQueueOld {
     }
 
     updatePriority(value, newPriority) {
-        for (let i = 0; i < this.queue.length; i++) {
-            if (this.queue[i][0] === value) {
-                this.queue[i][1] = newPriority
+        for (const element of this.queue) {
+            if (element[0] === value) {
+                element[1] = newPriority
                 return this._sort()
             }
         }
