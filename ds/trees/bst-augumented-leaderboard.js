@@ -10,7 +10,7 @@ class Node {
 }
 
 /**
- * Leaderboard implementation using Augmented BST
+ * Leaderboard implementation using Order Statistic Tree or a Augmented Tree
  * This BST nodes are augmented with size to find kth element in O(log n) time
  */
 class LeaderBoard {
