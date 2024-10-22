@@ -186,7 +186,7 @@ class LeaderBoard {
         } else {
             // The kth player is in the right subtree
             // Adjust k to account for the left subtree and current node
-            return this._select(node.right, k - leftSize - 1)
+            return this._select(node.right, k - (leftSize + 1))
         }
     }
 
